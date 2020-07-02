@@ -9,11 +9,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Set<String> materials12 = getMaterialNames("1.12");
-        Set<String> materials13 = getMaterialNames("1.13");
-        Set<String> materials14 = getMaterialNames("1.14");
-        Set<String> materials15 = getMaterialNames("1.15");
-        Set<String> materials16 = getMaterialNames("1.16");
+        String prefix = "materials";
+        Set<String> materials12 = getMaterialNames(prefix, "1.12");
+        Set<String> materials13 = getMaterialNames(prefix, "1.13");
+        Set<String> materials14 = getMaterialNames(prefix, "1.14");
+        Set<String> materials15 = getMaterialNames(prefix, "1.15");
+        Set<String> materials16 = getMaterialNames(prefix, "1.16");
 
         Collection<Material> materials = determineVersions(
                 new Pair(12, materials12),
@@ -63,10 +64,10 @@ public class Main {
         return materialMap.values();
     }
 
-    static Set<String> getMaterialNames(String version) {
+    static Set<String> getMaterialNames(String prefix, String version) {
         try {
             Set<String> materialNames = new TreeSet<>();
-            File file = new File("../sets/minecraft" + version + ".txt");
+            File file = new File("../sets/" + prefix + version + ".txt");
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 materialNames.add(scanner.nextLine());
