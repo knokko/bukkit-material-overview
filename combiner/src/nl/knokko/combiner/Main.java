@@ -34,6 +34,8 @@ public class Main {
                         "\t" + material.name + "(" + prefix + material.minVersion + ", " + prefix + material.maxVersion + "),"
                 );
             }
+            printer.flush();
+            printer.close();
         } catch (IOException io) {
             // Shouldn't happen
             throw new Error(io);
