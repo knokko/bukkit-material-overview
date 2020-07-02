@@ -1,27 +1,50 @@
 package nl.knokko.materials;
 
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class MaterialPrinter extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Material[] allMaterials = Material.values();
-
         try {
-            PrintWriter printer = new PrintWriter("materials.txt");
-            for (Material material : allMaterials) {
-                printer.println(material.name());
-            }
-            printer.flush();
-            printer.close();
+            printEnum(Material.values(), "materials", Enum::name);
+            printEnum(Enchantment.values(), "enchantments", Enchantment::getName);
+            printEnum(EntityDamageEvent.DamageCause.values(), "damageCauses", EntityDamageEvent.DamageCause::name);
+            printEnum(Material.values(), "blockTypes", Material::name, Material::isBlock);
+            printEnum(EntityType.values(), "entities", EntityType::name);
+            // Apparently, the first element of PotionEffectType.values() is null
+            printEnum(PotionEffectType.values(), "potionEffects", PotionEffectType::getName, Objects::nonNull);
+            printEnum(Particle.values(), "particles", Particle::name);
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new RuntimeException(io);
         }
+    }
+
+    private <T>void printEnum(T[] toPrint, String prefix, Function<T,String> nameFunction) throws IOException {
+        printEnum(toPrint, prefix, nameFunction, o -> true);
+    }
+
+    private <T>void printEnum(T[] toPrint, String prefix, Function<T,String> nameFunction, Predicate<T> filter) throws IOException {
+        PrintWriter writer = new PrintWriter(prefix + ".txt");
+        for (T value : toPrint) {
+            if (filter.test(value)) {
+                writer.println(nameFunction.apply(value));
+            }
+        }
+        writer.flush();
+        writer.close();
     }
 }

@@ -8,8 +8,16 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
+        handlePrefix("blockTypes");
+        handlePrefix("damageCauses");
+        handlePrefix("enchantments");
+        handlePrefix("entities");
+        handlePrefix("materials");
+        handlePrefix("particles");
+        handlePrefix("potionEffects");
+    }
 
-        String prefix = "materials";
+    static void handlePrefix(String prefix) {
         Set<String> materials12 = getMaterialNames(prefix, "1.12");
         Set<String> materials13 = getMaterialNames(prefix, "1.13");
         Set<String> materials14 = getMaterialNames(prefix, "1.14");
@@ -24,7 +32,7 @@ public class Main {
                 new Pair(16, materials16)
         );
 
-        generateMaterialsEnum(new File("enumPart.txt"), "VERSION1_", materials);
+        generateMaterialsEnum(new File(prefix + "Part.txt"), "VERSION1_", materials);
     }
 
     static void generateMaterialsEnum(File dest, String prefix, Collection<Material> materials) {
