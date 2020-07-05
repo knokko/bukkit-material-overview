@@ -18,13 +18,13 @@ public class Main {
     }
 
     static void handlePrefix(String prefix) {
-        Set<String> materials12 = getMaterialNames(prefix, "1.12");
-        Set<String> materials13 = getMaterialNames(prefix, "1.13");
-        Set<String> materials14 = getMaterialNames(prefix, "1.14");
-        Set<String> materials15 = getMaterialNames(prefix, "1.15");
-        Set<String> materials16 = getMaterialNames(prefix, "1.16");
+        List<String> materials12 = getMaterialNames(prefix, "1.12");
+        List<String> materials13 = getMaterialNames(prefix, "1.13");
+        List<String> materials14 = getMaterialNames(prefix, "1.14");
+        List<String> materials15 = getMaterialNames(prefix, "1.15");
+        List<String> materials16 = getMaterialNames(prefix, "1.16");
 
-        Collection<Material> materials = determineVersions(
+        List<Material> materials = determineVersions(
                 new Pair(12, materials12),
                 new Pair(13, materials13),
                 new Pair(14, materials14),
@@ -51,15 +51,19 @@ public class Main {
         }
     }
 
-    static Collection<Material> determineVersions(Pair...pairs) {
+    static List<Material> determineVersions(Pair...pairs) {
 
         Map<String, Material> materialMap = new HashMap<>();
+        List<Material> result = new ArrayList<>();
+
         for (Pair pair : pairs) {
             for (String materialName : pair.materialNames) {
 
                 Material existing = materialMap.get(materialName);
                 if (existing == null) {
-                    materialMap.put(materialName, new Material(materialName, pair.version, pair.version));
+                    Material next = new Material(materialName, pair.version, pair.version);
+                    materialMap.put(materialName, next);
+                    result.add(next);
                 } else {
                     if (pair.version < existing.minVersion)
                         existing.minVersion = pair.version;
@@ -69,12 +73,12 @@ public class Main {
             }
         }
 
-        return materialMap.values();
+        return result;
     }
 
-    static Set<String> getMaterialNames(String prefix, String version) {
+    static List<String> getMaterialNames(String prefix, String version) {
         try {
-            Set<String> materialNames = new TreeSet<>();
+            List<String> materialNames = new ArrayList<>();
             File file = new File("../sets/" + prefix + version + ".txt");
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
@@ -91,9 +95,9 @@ public class Main {
     static class Pair {
 
         final int version;
-        final Set<String> materialNames;
+        final List<String> materialNames;
 
-        Pair(int version, Set<String> materialNames) {
+        Pair(int version, List<String> materialNames) {
             this.version = version;
             this.materialNames= materialNames;
         }
