@@ -15,6 +15,7 @@ public class Main {
         handlePrefix("materials");
         handlePrefix("particles");
         handlePrefix("potionEffects");
+        handlePrefix("sounds");
     }
 
     static void handlePrefix(String prefix) {
@@ -23,13 +24,15 @@ public class Main {
         List<String> materials14 = getMaterialNames(prefix, "1.14");
         List<String> materials15 = getMaterialNames(prefix, "1.15");
         List<String> materials16 = getMaterialNames(prefix, "1.16");
+        List<String> materials17 = getMaterialNames(prefix, "1.17");
 
         List<Material> materials = determineVersions(
                 new Pair(12, materials12),
                 new Pair(13, materials13),
                 new Pair(14, materials14),
                 new Pair(15, materials15),
-                new Pair(16, materials16)
+                new Pair(16, materials16),
+                new Pair(17, materials17)
         );
 
         generateMaterialsEnum(new File(prefix + "Part.txt"), "VERSION1_", materials);
