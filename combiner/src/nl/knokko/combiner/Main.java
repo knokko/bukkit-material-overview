@@ -25,6 +25,7 @@ public class Main {
         List<String> materials15 = getMaterialNames(prefix, "1.15");
         List<String> materials16 = getMaterialNames(prefix, "1.16");
         List<String> materials17 = getMaterialNames(prefix, "1.17");
+        List<String> materials18 = getMaterialNames(prefix, "1.18");
 
         List<Material> materials = determineVersions(
                 new Pair(12, materials12),
@@ -32,7 +33,8 @@ public class Main {
                 new Pair(14, materials14),
                 new Pair(15, materials15),
                 new Pair(16, materials16),
-                new Pair(17, materials17)
+                new Pair(17, materials17),
+                new Pair(18, materials18)
         );
 
         generateMaterialsEnum(new File(prefix + "Part.txt"), "VERSION1_", materials);
@@ -82,7 +84,7 @@ public class Main {
     static List<String> getMaterialNames(String prefix, String version) {
         try {
             List<String> materialNames = new ArrayList<>();
-            File file = new File("../sets/" + prefix + version + ".txt");
+            File file = new File("sets/" + prefix + version + ".txt");
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 materialNames.add(scanner.nextLine());
