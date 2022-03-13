@@ -16,36 +16,45 @@ public class Main {
         handlePrefix("particles");
         handlePrefix("potionEffects");
         handlePrefix("sounds");
+        handleRawDamageCauses();
     }
 
-    static void handlePrefix(String prefix) {
-        List<String> materials12 = getMaterialNames(prefix, "1.12");
-        List<String> materials13 = getMaterialNames(prefix, "1.13");
-        List<String> materials14 = getMaterialNames(prefix, "1.14");
-        List<String> materials15 = getMaterialNames(prefix, "1.15");
-        List<String> materials16 = getMaterialNames(prefix, "1.16");
-        List<String> materials17 = getMaterialNames(prefix, "1.17");
-        List<String> materials18 = getMaterialNames(prefix, "1.18");
+    static String toUpperSnakeCase(String camelCase) {
+        StringBuilder result = new StringBuilder();
+        for (int index = 0; index < camelCase.length(); index++) {
+            char currentChar = camelCase.charAt(index);
+            if (Character.isUpperCase(currentChar)) {
+                result.append('_');
+            }
+            result.append(Character.toUpperCase(currentChar));
+        }
+        return result.toString();
+    }
 
-        List<Material> materials = determineVersions(
-                new Pair(12, materials12),
-                new Pair(13, materials13),
-                new Pair(14, materials14),
-                new Pair(15, materials15),
-                new Pair(16, materials16),
-                new Pair(17, materials17),
-                new Pair(18, materials18)
+    static void handleRawDamageCauses() {
+        List<String> causes12 = getRawDamageCauses("1.12", false);
+        List<String> causes13 = getRawDamageCauses("1.13", true);
+        List<String> causes14 = getRawDamageCauses("1.14", true);
+        List<String> causes15 = getRawDamageCauses("1.15", true);
+        List<String> causes16 = getRawDamageCauses("1.16", true);
+        List<String> causes17 = getRawDamageCauses("1.17", true);
+        List<String> causes18 = getRawDamageCauses("1.18", true);
+
+        List<EnumValue> values = determineVersions(
+                new Pair(12, causes12),
+                new Pair(13, causes13),
+                new Pair(14, causes14),
+                new Pair(15, causes15),
+                new Pair(16, causes16),
+                new Pair(17, causes17),
+                new Pair(18, causes18)
         );
 
-        generateMaterialsEnum(new File(prefix + "Part.txt"), "VERSION1_", materials);
-    }
-
-    static void generateMaterialsEnum(File dest, String prefix, Collection<Material> materials) {
         try {
-            PrintWriter printer = new PrintWriter(dest);
-            for (Material material : materials) {
+            PrintWriter printer = new PrintWriter("rawDamageCausesPart.txt");
+            for (EnumValue rawCause : values) {
                 printer.println(
-                        "\t" + material.name + "(" + prefix + material.minVersion + ", " + prefix + material.maxVersion + "),"
+                        "\t" + toUpperSnakeCase(rawCause.name) + "(\"" + rawCause.name + "\", " + "VERSION1_" + rawCause.minVersion + ", VERSION1_" + rawCause.maxVersion + "),"
                 );
             }
             printer.flush();
@@ -56,17 +65,55 @@ public class Main {
         }
     }
 
-    static List<Material> determineVersions(Pair...pairs) {
+    static void handlePrefix(String prefix) {
+        List<String> values12 = getEnumValues(prefix, "1.12");
+        List<String> values13 = getEnumValues(prefix, "1.13");
+        List<String> values14 = getEnumValues(prefix, "1.14");
+        List<String> values15 = getEnumValues(prefix, "1.15");
+        List<String> values16 = getEnumValues(prefix, "1.16");
+        List<String> values17 = getEnumValues(prefix, "1.17");
+        List<String> values18 = getEnumValues(prefix, "1.18");
 
-        Map<String, Material> materialMap = new HashMap<>();
-        List<Material> result = new ArrayList<>();
+        List<EnumValue> values = determineVersions(
+                new Pair(12, values12),
+                new Pair(13, values13),
+                new Pair(14, values14),
+                new Pair(15, values15),
+                new Pair(16, values16),
+                new Pair(17, values17),
+                new Pair(18, values18)
+        );
+
+        generateMaterialsEnum(new File(prefix + "Part.txt"), values);
+    }
+
+    static void generateMaterialsEnum(File dest, Collection<EnumValue> materials) {
+        try {
+            PrintWriter printer = new PrintWriter(dest);
+            for (EnumValue material : materials) {
+                printer.println(
+                        "\t" + material.name + "(VERSION1_" + material.minVersion + ", VERSION1_" + material.maxVersion + "),"
+                );
+            }
+            printer.flush();
+            printer.close();
+        } catch (IOException io) {
+            // Shouldn't happen
+            throw new Error(io);
+        }
+    }
+
+    static List<EnumValue> determineVersions(Pair...pairs) {
+
+        Map<String, EnumValue> materialMap = new HashMap<>();
+        List<EnumValue> result = new ArrayList<>();
 
         for (Pair pair : pairs) {
             for (String materialName : pair.materialNames) {
 
-                Material existing = materialMap.get(materialName);
+                EnumValue existing = materialMap.get(materialName);
                 if (existing == null) {
-                    Material next = new Material(materialName, pair.version, pair.version);
+                    EnumValue next = new EnumValue(materialName, pair.version, pair.version);
                     materialMap.put(materialName, next);
                     result.add(next);
                 } else {
@@ -81,7 +128,7 @@ public class Main {
         return result;
     }
 
-    static List<String> getMaterialNames(String prefix, String version) {
+    static List<String> getEnumValues(String prefix, String version) {
         try {
             List<String> materialNames = new ArrayList<>();
             File file = new File("sets/" + prefix + version + ".txt");
@@ -91,6 +138,36 @@ public class Main {
             }
             scanner.close();
             return materialNames;
+        } catch (IOException io) {
+            // Shouldn't happen anyway
+            throw new Error(io);
+        }
+    }
+
+    static List<String> getRawDamageCauses(String version, boolean isJson) {
+        try {
+            List<String> rawCauses = new ArrayList<>();
+            File file = new File("sets/lang" + version + (isJson ? ".json" : ".txt"));
+            Scanner scanner = new Scanner(file);
+
+            String rawDamagePrefix = "death.attack.";
+            if (isJson) rawDamagePrefix = "  \"" + rawDamagePrefix;
+
+            while (scanner.hasNextLine()) {
+                String nextLine = scanner.nextLine();
+                if (nextLine.startsWith(rawDamagePrefix)) {
+                    int endIndexType = nextLine.indexOf('.', rawDamagePrefix.length());
+                    if (endIndexType != -1) {
+                        String rawCause = nextLine.substring(rawDamagePrefix.length(), endIndexType);
+                        if (nextLine.startsWith(rawDamagePrefix + rawCause + ".player")) {
+                            rawCauses.add(rawCause);
+                        }
+                    }
+                }
+            }
+
+            scanner.close();
+            return rawCauses;
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new Error(io);
@@ -108,14 +185,14 @@ public class Main {
         }
     }
 
-    static class Material {
+    static class EnumValue {
 
         final String name;
 
         int minVersion;
         int maxVersion;
 
-        Material(String name, int minVersion, int maxVersion) {
+        EnumValue(String name, int minVersion, int maxVersion) {
             this.name = name;
             this.minVersion = minVersion;
             this.maxVersion = maxVersion;
