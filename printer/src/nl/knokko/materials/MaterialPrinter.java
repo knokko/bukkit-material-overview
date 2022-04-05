@@ -3,6 +3,7 @@ package nl.knokko.materials;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Biome;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -29,6 +30,7 @@ public class MaterialPrinter extends JavaPlugin {
             printEnum(PotionEffectType.values(), "potionEffects", PotionEffectType::getName, Objects::nonNull);
             printEnum(Particle.values(), "particles", Particle::name);
             printEnum(Sound.values(), "sounds", Sound::name);
+            printEnum(Biome.values(), "biomes", Enum::name);
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new RuntimeException(io);

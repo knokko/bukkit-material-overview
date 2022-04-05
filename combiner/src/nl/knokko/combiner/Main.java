@@ -16,6 +16,7 @@ public class Main {
         handlePrefix("particles");
         handlePrefix("potionEffects");
         handlePrefix("sounds");
+        handlePrefix("biomes");
         handleRawDamageCauses();
     }
 
