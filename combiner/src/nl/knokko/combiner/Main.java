@@ -40,6 +40,7 @@ public class Main {
         List<String> causes16 = getRawDamageCauses("1.16", true);
         List<String> causes17 = getRawDamageCauses("1.17", true);
         List<String> causes18 = getRawDamageCauses("1.18", true);
+        List<String> causes19 = getRawDamageCauses("1.19", true);
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, causes12),
@@ -48,7 +49,8 @@ public class Main {
                 new Pair(15, causes15),
                 new Pair(16, causes16),
                 new Pair(17, causes17),
-                new Pair(18, causes18)
+                new Pair(18, causes18),
+                new Pair(19, causes19)
         );
 
         try {
@@ -74,6 +76,7 @@ public class Main {
         List<String> values16 = getEnumValues(prefix, "1.16");
         List<String> values17 = getEnumValues(prefix, "1.17");
         List<String> values18 = getEnumValues(prefix, "1.18");
+        List<String> values19 = getEnumValues(prefix, "1.19");
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, values12),
@@ -82,7 +85,8 @@ public class Main {
                 new Pair(15, values15),
                 new Pair(16, values16),
                 new Pair(17, values17),
-                new Pair(18, values18)
+                new Pair(18, values18),
+                new Pair(19, values19)
         );
 
         generateMaterialsEnum(new File(prefix + "Part.txt"), values);
