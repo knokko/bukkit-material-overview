@@ -17,6 +17,7 @@ public class Main {
         handlePrefix("potionEffects");
         handlePrefix("sounds");
         handlePrefix("biomes");
+        handlePrefix("soundCategories");
         handleRawDamageCauses();
     }
 

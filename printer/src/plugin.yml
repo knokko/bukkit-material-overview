@@ -1,3 +1,4 @@
 name: MaterialPrinter
 version: 1.0
 main: nl.knokko.materials.MaterialPrinter
+api-version: 1.19
