@@ -18,6 +18,7 @@ public class Main {
         handlePrefix("sounds");
         handlePrefix("biomes");
         handlePrefix("soundCategories");
+        handlePrefix("treeTypes");
         handleRawDamageCauses();
     }
 
@@ -42,6 +43,7 @@ public class Main {
         List<String> causes17 = getRawDamageCauses("1.17", true);
         List<String> causes18 = getRawDamageCauses("1.18", true);
         List<String> causes19 = getRawDamageCauses("1.19", true);
+        List<String> causes20 = getRawDamageCauses("1.20", true);
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, causes12),
@@ -51,7 +53,8 @@ public class Main {
                 new Pair(16, causes16),
                 new Pair(17, causes17),
                 new Pair(18, causes18),
-                new Pair(19, causes19)
+                new Pair(19, causes19),
+                new Pair(20, causes20)
         );
 
         try {
@@ -78,6 +81,7 @@ public class Main {
         List<String> values17 = getEnumValues(prefix, "1.17");
         List<String> values18 = getEnumValues(prefix, "1.18");
         List<String> values19 = getEnumValues(prefix, "1.19");
+        List<String> values20 = getEnumValues(prefix, "1.20");
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, values12),
@@ -87,7 +91,8 @@ public class Main {
                 new Pair(16, values16),
                 new Pair(17, values17),
                 new Pair(18, values18),
-                new Pair(19, values19)
+                new Pair(19, values19),
+                new Pair(20, values20)
         );
 
         generateMaterialsEnum(new File(prefix + "Part.txt"), values);
