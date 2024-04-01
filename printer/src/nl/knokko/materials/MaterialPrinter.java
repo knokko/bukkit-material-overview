@@ -5,6 +5,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
@@ -31,6 +32,7 @@ public class MaterialPrinter extends JavaPlugin {
             printEnum(Biome.values(), "biomes", Enum::name);
             printEnum(SoundCategory.values(), "soundCategories", SoundCategory::name);
             printEnum(TreeType.values(), "treeTypes", TreeType::name);
+            printEnum(ItemFlag.values(), "itemFlags", ItemFlag::name);
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new RuntimeException(io);

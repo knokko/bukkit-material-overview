@@ -19,6 +19,7 @@ public class Main {
         handlePrefix("biomes");
         handlePrefix("soundCategories");
         handlePrefix("treeTypes");
+        handlePrefix("itemFlags");
         handleRawDamageCauses();
     }
 
