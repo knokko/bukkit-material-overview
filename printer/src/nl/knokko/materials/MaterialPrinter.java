@@ -33,6 +33,7 @@ public class MaterialPrinter extends JavaPlugin {
             printEnum(SoundCategory.values(), "soundCategories", SoundCategory::name);
             printEnum(TreeType.values(), "treeTypes", TreeType::name);
             printEnum(ItemFlag.values(), "itemFlags", ItemFlag::name);
+            printEnum(Material.values(), "foodTypes", Material::name, Material::isEdible);
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new RuntimeException(io);

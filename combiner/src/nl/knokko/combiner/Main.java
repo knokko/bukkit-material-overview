@@ -20,6 +20,7 @@ public class Main {
         handlePrefix("soundCategories");
         handlePrefix("treeTypes");
         handlePrefix("itemFlags");
+        handlePrefix("foodTypes");
         handleRawDamageCauses();
     }
 
