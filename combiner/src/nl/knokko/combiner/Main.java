@@ -21,6 +21,8 @@ public class Main {
         handlePrefix("treeTypes");
         handlePrefix("itemFlags");
         handlePrefix("foodTypes");
+        handlePrefix("fuel");
+        handlePrefix("smeltables");
         handleRawDamageCauses();
     }
 
