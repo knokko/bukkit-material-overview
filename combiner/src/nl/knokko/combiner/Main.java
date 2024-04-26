@@ -39,15 +39,15 @@ public class Main {
     }
 
     static void handleRawDamageCauses() {
-        List<String> causes12 = getRawDamageCauses("1.12", false);
-        List<String> causes13 = getRawDamageCauses("1.13", true);
-        List<String> causes14 = getRawDamageCauses("1.14", true);
-        List<String> causes15 = getRawDamageCauses("1.15", true);
-        List<String> causes16 = getRawDamageCauses("1.16", true);
-        List<String> causes17 = getRawDamageCauses("1.17", true);
-        List<String> causes18 = getRawDamageCauses("1.18", true);
-        List<String> causes19 = getRawDamageCauses("1.19", true);
-        List<String> causes20 = getRawDamageCauses("1.20", true);
+        List<List<String>> causes12 = getRawDamageCauses("1.12", false);
+        List<List<String>> causes13 = getRawDamageCauses("1.13", true);
+        List<List<String>> causes14 = getRawDamageCauses("1.14", true);
+        List<List<String>> causes15 = getRawDamageCauses("1.15", true);
+        List<List<String>> causes16 = getRawDamageCauses("1.16", true);
+        List<List<String>> causes17 = getRawDamageCauses("1.17", true);
+        List<List<String>> causes18 = getRawDamageCauses("1.18", true);
+        List<List<String>> causes19 = getRawDamageCauses("1.19", true);
+        List<List<String>> causes20 = getRawDamageCauses("1.20", true);
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, causes12),
@@ -77,15 +77,15 @@ public class Main {
     }
 
     static void handlePrefix(String prefix) {
-        List<String> values12 = getEnumValues(prefix, "1.12");
-        List<String> values13 = getEnumValues(prefix, "1.13");
-        List<String> values14 = getEnumValues(prefix, "1.14");
-        List<String> values15 = getEnumValues(prefix, "1.15");
-        List<String> values16 = getEnumValues(prefix, "1.16");
-        List<String> values17 = getEnumValues(prefix, "1.17");
-        List<String> values18 = getEnumValues(prefix, "1.18");
-        List<String> values19 = getEnumValues(prefix, "1.19");
-        List<String> values20 = getEnumValues(prefix, "1.20");
+        List<List<String>> values12 = getEnumValues(prefix, "1.12");
+        List<List<String>> values13 = getEnumValues(prefix, "1.13");
+        List<List<String>> values14 = getEnumValues(prefix, "1.14");
+        List<List<String>> values15 = getEnumValues(prefix, "1.15");
+        List<List<String>> values16 = getEnumValues(prefix, "1.16");
+        List<List<String>> values17 = getEnumValues(prefix, "1.17");
+        List<List<String>> values18 = getEnumValues(prefix, "1.18");
+        List<List<String>> values19 = getEnumValues(prefix, "1.19");
+        List<List<String>> values20 = getEnumValues(prefix, "1.20");
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, values12),
@@ -106,9 +106,9 @@ public class Main {
         try {
             PrintWriter printer = new PrintWriter(dest);
             for (EnumValue material : materials) {
-                printer.println(
-                        "\t" + material.name + "(VERSION1_" + material.minVersion + ", VERSION1_" + material.maxVersion + "),"
-                );
+                printer.print("\t" + material.name + "(VERSION1_" + material.minVersion + ", VERSION1_" + material.maxVersion);
+                for (String parameter : material.parameters) printer.print(", " + parameter);
+                printer.println("),");
             }
             printer.flush();
             printer.close();
@@ -124,18 +124,23 @@ public class Main {
         List<EnumValue> result = new ArrayList<>();
 
         for (Pair pair : pairs) {
-            for (String materialName : pair.materialNames) {
+            for (List<String> values : pair.materialValues) {
 
+                String materialName = values.get(0);
+                List<String> parameterValues = values.subList(1, values.size());
                 EnumValue existing = materialMap.get(materialName);
                 if (existing == null) {
-                    EnumValue next = new EnumValue(materialName, pair.version, pair.version);
+                    EnumValue next = new EnumValue(materialName, pair.version, pair.version, parameterValues);
                     materialMap.put(materialName, next);
                     result.add(next);
                 } else {
-                    if (pair.version < existing.minVersion)
-                        existing.minVersion = pair.version;
-                    if (pair.version > existing.maxVersion)
-                        existing.maxVersion = pair.version;
+                    if (pair.version < existing.minVersion) existing.minVersion = pair.version;
+                    if (pair.version > existing.maxVersion) existing.maxVersion = pair.version;
+                    if (!parameterValues.equals(existing.parameters)) {
+                        System.out.println("[WARNING] Parameter mismatch for " + materialName +
+                                ": " + existing.parameters + " vs " + parameterValues);
+                        existing.parameters = parameterValues;
+                    }
                 }
             }
         }
@@ -143,25 +148,43 @@ public class Main {
         return result;
     }
 
-    static List<String> getEnumValues(String prefix, String version) {
+    static List<List<String>> getEnumValues(String prefix, String version) {
         try {
-            List<String> materialNames = new ArrayList<>();
+            List<List<String>> values = new ArrayList<>();
             File file = new File("sets/" + prefix + version + ".txt");
             Scanner scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
-                materialNames.add(scanner.nextLine());
+                String line = scanner.nextLine();
+                int startBracket = line.indexOf('(');
+                if (startBracket == -1) {
+                    List<String> value = new ArrayList<>(1);
+                    value.add(line);
+                    values.add(value);
+                } else {
+                    int endBracket = line.indexOf(')');
+                    if (endBracket == -1) throw new IllegalArgumentException("Malformed line " + line);
+
+                    String name = line.substring(0, startBracket);
+                    String parameters = line.substring(startBracket + 1, endBracket);
+                    String[] split = parameters.split(", ");
+
+                    List<String> value = new ArrayList<>(1 + split.length);
+                    value.add(name);
+                    value.addAll(Arrays.asList(split));
+                    values.add(value);
+                }
             }
             scanner.close();
-            return materialNames;
+            return values;
         } catch (IOException io) {
             // Shouldn't happen anyway
             throw new Error(io);
         }
     }
 
-    static List<String> getRawDamageCauses(String version, boolean isJson) {
+    static List<List<String>> getRawDamageCauses(String version, boolean isJson) {
         try {
-            List<String> rawCauses = new ArrayList<>();
+            List<List<String>> rawCauses = new ArrayList<>();
             File file = new File("sets/lang" + version + (isJson ? ".json" : ".txt"));
             Scanner scanner = new Scanner(file);
 
@@ -175,7 +198,9 @@ public class Main {
                     if (endIndexType != -1) {
                         String rawCause = nextLine.substring(rawDamagePrefix.length(), endIndexType);
                         if (nextLine.startsWith(rawDamagePrefix + rawCause + ".player")) {
-                            rawCauses.add(rawCause);
+                            List<String> rawList = new ArrayList<>(1);
+                            rawList.add(rawCause);
+                            rawCauses.add(rawList);
                         }
                     }
                 }
@@ -192,11 +217,11 @@ public class Main {
     static class Pair {
 
         final int version;
-        final List<String> materialNames;
+        final List<List<String>> materialValues;
 
-        Pair(int version, List<String> materialNames) {
+        Pair(int version, List<List<String>> materialValues) {
             this.version = version;
-            this.materialNames= materialNames;
+            this.materialValues = materialValues;
         }
     }
 
@@ -206,11 +231,13 @@ public class Main {
 
         int minVersion;
         int maxVersion;
+        List<String> parameters;
 
-        EnumValue(String name, int minVersion, int maxVersion) {
+        EnumValue(String name, int minVersion, int maxVersion, List<String> parameters) {
             this.name = name;
             this.minVersion = minVersion;
             this.maxVersion = maxVersion;
+            this.parameters = parameters;
         }
     }
 }

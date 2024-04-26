@@ -23,7 +23,7 @@ public class MaterialPrinter extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            printEnum(Material.values(), "materials", Enum::name);
+            printEnum(Material.values(), "materials", Enum::name, m -> true, m -> Integer.toString(m.getMaxStackSize()));
             printEnum(Enchantment.values(), "enchantments", Enchantment::getName);
             printEnum(EntityDamageEvent.DamageCause.values(), "damageCauses", EntityDamageEvent.DamageCause::name);
             printEnum(Material.values(), "blockTypes", Material::name, Material::isBlock);
@@ -58,11 +58,20 @@ public class MaterialPrinter extends JavaPlugin {
         printEnum(toPrint, prefix, nameFunction, o -> true);
     }
 
-    private <T>void printEnum(T[] toPrint, String prefix, Function<T,String> nameFunction, Predicate<T> filter) throws IOException {
+    @SafeVarargs
+    private final <T>void printEnum(
+            T[] toPrint, String prefix, Function<T, String> nameFunction,
+            Predicate<T> filter, Function<T, String>... parameters) throws IOException {
         PrintWriter writer = new PrintWriter(prefix + ".txt");
         for (T value : toPrint) {
             if (filter.test(value)) {
-                writer.println(nameFunction.apply(value));
+                writer.print(nameFunction.apply(value));
+                writer.print('(');
+                for (int index = 0; index < parameters.length; index++) {
+                    writer.print(parameters[index].apply(value));
+                    if (index < parameters.length - 1) writer.print(", ");
+                }
+                writer.println(')');
             }
         }
         writer.flush();
