@@ -48,6 +48,7 @@ public class Main {
         List<List<String>> causes18 = getRawDamageCauses("1.18", true);
         List<List<String>> causes19 = getRawDamageCauses("1.19", true);
         List<List<String>> causes20 = getRawDamageCauses("1.20", true);
+        List<List<String>> causes21 = getRawDamageCauses("1.21", true);
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, causes12),
@@ -58,7 +59,8 @@ public class Main {
                 new Pair(17, causes17),
                 new Pair(18, causes18),
                 new Pair(19, causes19),
-                new Pair(20, causes20)
+                new Pair(20, causes20),
+                new Pair(21, causes21)
         );
 
         try {
@@ -86,6 +88,7 @@ public class Main {
         List<List<String>> values18 = getEnumValues(prefix, "1.18");
         List<List<String>> values19 = getEnumValues(prefix, "1.19");
         List<List<String>> values20 = getEnumValues(prefix, "1.20");
+        List<List<String>> values21 = getEnumValues(prefix, "1.21");
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, values12),
@@ -96,7 +99,8 @@ public class Main {
                 new Pair(17, values17),
                 new Pair(18, values18),
                 new Pair(19, values19),
-                new Pair(20, values20)
+                new Pair(20, values20),
+                new Pair(21, values21)
         );
 
         generateMaterialsEnum(new File(prefix + "Part.txt"), values);
@@ -170,7 +174,9 @@ public class Main {
 
                     List<String> value = new ArrayList<>(1 + split.length);
                     value.add(name);
-                    value.addAll(Arrays.asList(split));
+                    if (split.length > 1 || !split[0].isEmpty()) {
+                        value.addAll(Arrays.asList(split));
+                    }
                     values.add(value);
                 }
             }
