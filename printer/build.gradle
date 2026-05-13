@@ -1,0 +1,21 @@
+plugins {
+	id "java"
+}
+
+apply plugin: "java"
+
+repositories {
+	mavenCentral()
+	maven {
+		url = "https://hub.spigotmc.org/nexus/content/groups/public/"
+
+		content {
+			includeGroup "org.bukkit"
+			includeGroup "org.spigotmc"
+		}
+	}
+}
+
+dependencies {
+	compileOnly "org.spigotmc:spigot-api:26.1.2-R0.1-SNAPSHOT"
+}

@@ -8,21 +8,21 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        handlePrefix("blockTypes");
-        handlePrefix("damageCauses");
-        handlePrefix("enchantments");
-        handlePrefix("entities");
-        handlePrefix("materials");
-        handlePrefix("particles");
-        handlePrefix("potionEffects");
-        handlePrefix("sounds");
-        handlePrefix("biomes");
-        handlePrefix("soundCategories");
-        handlePrefix("treeTypes");
-        handlePrefix("itemFlags");
-        handlePrefix("foodTypes");
-        handlePrefix("fuel");
-        handlePrefix("smeltables");
+        handlePrefix("blockTypes", "VBlockType");
+        handlePrefix("damageCauses", "VDamageCause");
+        handlePrefix("enchantments", "VEnchantment");
+        handlePrefix("entities", "VEntityType");
+        handlePrefix("materials", "VMaterial");
+        handlePrefix("particles", "VParticle");
+        handlePrefix("potionEffects", "VEffectType");
+        handlePrefix("sounds", "VSoundType");
+        handlePrefix("biomes", "VBiome");
+        handlePrefix("soundCategories", "VSoundCategory");
+        handlePrefix("treeTypes", "VTreeType");
+        handlePrefix("itemFlags", "VItemFlag");
+        handlePrefix("foodTypes", "VFoodType");
+        handlePrefix("fuel", "VFuelType");
+        handlePrefix("smeltables", "VFurnaceInput");
         handleRawDamageCauses();
     }
 
@@ -38,6 +38,11 @@ public class Main {
         return result.toString();
     }
 
+    private static String versionString(int raw) {
+        if (raw <= 21) return "VERSION1_" + raw;
+        else return "VERSION" + raw;
+    }
+
     static void handleRawDamageCauses() {
         List<List<String>> causes12 = getRawDamageCauses("1.12", false);
         List<List<String>> causes13 = getRawDamageCauses("1.13", true);
@@ -49,6 +54,7 @@ public class Main {
         List<List<String>> causes19 = getRawDamageCauses("1.19", true);
         List<List<String>> causes20 = getRawDamageCauses("1.20", true);
         List<List<String>> causes21 = getRawDamageCauses("1.21", true);
+        List<List<String>> causes26 = getRawDamageCauses("26", true);
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, causes12),
@@ -60,14 +66,15 @@ public class Main {
                 new Pair(18, causes18),
                 new Pair(19, causes19),
                 new Pair(20, causes20),
-                new Pair(21, causes21)
+                new Pair(21, causes21),
+                new Pair(26, causes26)
         );
 
         try {
-            PrintWriter printer = new PrintWriter("rawDamageCausesPart.txt");
+            PrintWriter printer = new PrintWriter("combiner/rawDamageCausesPart.txt");
             for (EnumValue rawCause : values) {
                 printer.println(
-                        "\t" + toUpperSnakeCase(rawCause.name) + "(\"" + rawCause.name + "\", " + "VERSION1_" + rawCause.minVersion + ", VERSION1_" + rawCause.maxVersion + "),"
+                        "\t" + toUpperSnakeCase(rawCause.name) + "(\"" + rawCause.name + "\", " + versionString(rawCause.minVersion) + ", " + versionString(rawCause.maxVersion) + "),"
                 );
             }
             printer.flush();
@@ -78,7 +85,7 @@ public class Main {
         }
     }
 
-    static void handlePrefix(String prefix) {
+    static void handlePrefix(String prefix, String className) {
         List<List<String>> values12 = getEnumValues(prefix, "1.12");
         List<List<String>> values13 = getEnumValues(prefix, "1.13");
         List<List<String>> values14 = getEnumValues(prefix, "1.14");
@@ -89,6 +96,7 @@ public class Main {
         List<List<String>> values19 = getEnumValues(prefix, "1.19");
         List<List<String>> values20 = getEnumValues(prefix, "1.20");
         List<List<String>> values21 = getEnumValues(prefix, "1.21");
+        List<List<String>> values26 = getEnumValues(prefix, "26");
 
         List<EnumValue> values = determineVersions(
                 new Pair(12, values12),
@@ -100,19 +108,42 @@ public class Main {
                 new Pair(18, values18),
                 new Pair(19, values19),
                 new Pair(20, values20),
-                new Pair(21, values21)
+                new Pair(21, values21),
+                new Pair(26, values26)
         );
 
-        generateMaterialsEnum(new File(prefix + "Part.txt"), values);
+        generateMaterialsEnum(new File("combiner/" + prefix + "Part.txt"), className, values);
     }
 
-    static void generateMaterialsEnum(File dest, Collection<EnumValue> materials) {
+    static void generateMaterialsEnum(File dest, String className, Collection<EnumValue> materials) {
         try {
             PrintWriter printer = new PrintWriter(dest);
+            boolean containsDots = materials.stream().anyMatch(
+                    material -> material.name.contains(".") || material.name.contains(":")
+            );
+            boolean hasMany = materials.size() > 3000;
             for (EnumValue material : materials) {
-                printer.print("\t" + material.name + "(VERSION1_" + material.minVersion + ", VERSION1_" + material.maxVersion);
+                String constantName;
+                if (containsDots) {
+                    constantName = material.name.replace('.', '_').replace(':', '_');
+                } else {
+                    constantName = material.name;
+                }
+
+                if (hasMany) {
+                    printer.print("\tpublic static final " + className + " " + constantName + " = new " + className);
+                } else {
+                    printer.print("\t" + constantName);
+                }
+
+                printer.print("(" + versionString(material.minVersion) + ", " + versionString(material.maxVersion));
+                if (containsDots) {
+                    printer.print(", \"" + material.name + '"');
+                }
                 for (String parameter : material.parameters) printer.print(", " + parameter);
-                printer.println("),");
+
+                if (hasMany) printer.println(");");
+                else printer.println("),");
             }
             printer.flush();
             printer.close();

@@ -10,6 +10,7 @@ import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.registry.RegistryAware;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,15 +25,14 @@ public class MaterialPrinter extends JavaPlugin {
     public void onEnable() {
         try {
             printEnum(Material.values(), "materials", Enum::name, m -> true, m -> Integer.toString(m.getMaxStackSize()));
-            printEnum(Enchantment.values(), "enchantments", Enchantment::getName);
+            printRegistry(Registry.ENCHANTMENT, "enchantments", null, null);
             printEnum(EntityDamageEvent.DamageCause.values(), "damageCauses", EntityDamageEvent.DamageCause::name);
             printEnum(Material.values(), "blockTypes", Material::name, Material::isBlock);
             printEnum(EntityType.values(), "entities", EntityType::name);
-            // Apparently, the first element of PotionEffectType.values() is null
-            printEnum(PotionEffectType.values(), "potionEffects", PotionEffectType::getName, Objects::nonNull);
+            printRegistry(Registry.EFFECT, "potionEffects", null, null);
             printEnum(Particle.values(), "particles", Particle::name);
-            printEnum(Sound.values(), "sounds", Sound::name);
-            printEnum(Biome.values(), "biomes", Enum::name);
+            printRegistry(Registry.SOUNDS, "sounds", null, null);
+            printRegistry(Registry.BIOME, "biomes", null, null);
             printEnum(SoundCategory.values(), "soundCategories", SoundCategory::name);
             printEnum(TreeType.values(), "treeTypes", TreeType::name);
             printEnum(ItemFlag.values(), "itemFlags", ItemFlag::name);
@@ -59,7 +59,29 @@ public class MaterialPrinter extends JavaPlugin {
     }
 
     @SafeVarargs
-    private final <T>void printEnum(
+    private <T extends RegistryAware & Keyed> void printRegistry(
+            Registry<T> registry, String prefix, Function<T, String> nameFunction,
+            Predicate<T> filter, Function<T, String>... parameters
+    ) throws IOException {
+        PrintWriter writer = new PrintWriter(prefix + ".txt");
+        for (T value : registry) {
+            if (value.isRegistered() && (filter == null || filter.test(value))) {
+                if (nameFunction == null) writer.print(value.getKeyOrThrow().getKey());
+                else writer.print(nameFunction.apply(value));
+                writer.print('(');
+                for (int index = 0; index < parameters.length; index++) {
+                    writer.print(parameters[index].apply(value));
+                    if (index < parameters.length - 1) writer.print(", ");
+                }
+                writer.println(')');
+            }
+        }
+        writer.flush();
+        writer.close();
+    }
+
+    @SafeVarargs
+    private <T> void printEnum(
             T[] toPrint, String prefix, Function<T, String> nameFunction,
             Predicate<T> filter, Function<T, String>... parameters) throws IOException {
         PrintWriter writer = new PrintWriter(prefix + ".txt");
